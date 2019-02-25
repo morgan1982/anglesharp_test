@@ -13,6 +13,19 @@ using AngleSharp.Dom;
 
 namespace AngleShardDemo1
 {
+    class BaseReg
+    {
+        public static string FontSize { get; } = "font-size";
+        public static string FontColor { get; } = "";
+        public static string BackGroundColor { get; } = "";
+        public static string FontFamily { get; } = "";
+        public static string PickParentAttributes { get; } = "<(.*?)>";
+        public static string PickStyle { get; } = "style=\"([^\"]+\")";
+
+        public static Regex CreateRegex(string args) => new Regex(args);
+     
+    }
+
     class RegexFactory
     {
         public static Regex FontSize() => new Regex("");
@@ -41,7 +54,12 @@ namespace AngleShardDemo1
             //{
             //    Console.WriteLine(title);
             //}
-            using (StreamReader reader = new StreamReader("C:\\templates\\grass.html"))
+            
+            var reg = BaseReg.CreateRegex(BaseReg.PickStyle);
+
+
+
+            using (StreamReader reader = new StreamReader("C:\\templates\\red.html"))
             {
                 string content = reader.ReadToEnd();
 
