@@ -24,6 +24,8 @@ namespace AngleShardDemo1
         public static Regex FontFamily() => new Regex("");
 
         public static Regex PickParentAttributes() => new Regex("<(.*?)>");
+
+        public static Regex PickStyle() => new Regex("style=\"([^\"]+\")");
     }
 
     class Program
@@ -65,34 +67,7 @@ namespace AngleShardDemo1
         }
 
         // replaces the bold 
-        static void TestMod(IHtmlDocument document)
-        {
-            var description = document.GetElementById("__DESCRIPTION__");
 
-            var styleRegex = new Regex("style=\"([^\"]+\")");
-
-            // used by the stringbuilder to insert the style to the corerct index
-            string parentStyle = styleRegex.Match(description.OuterHtml).Value;
-            int semiIndex = parentStyle.IndexOf(";"); // find the index of the first semicolon
-
-
-            StringBuilder styleOfParentBuilder = new StringBuilder(styleRegex.Match(description.OuterHtml).Value);
-            
-
-            string inner = description.InnerHtml;
-            bool isBold = inner.Contains("<b>");
-
-            if (isBold)
-            {
-                styleOfParentBuilder.Insert(semiIndex, "; font-weight: bold "); // inserts the attribute to the style
-                string finalStyle = styleOfParentBuilder.ToString();
-                var splitStyleOfParent = finalStyle.Split('"');
-
-                description.SetAttribute("style", splitStyleOfParent[1]);
-            }
-
-
-        }
 
         delegate void AddElement(IHtmlCollection<IElement> elements);
 
@@ -110,7 +85,7 @@ namespace AngleShardDemo1
                 // UserModificationsSanitizer(element)
             }
 
-            AddElement add = delegate (IHtmlCollection<IElement> elements)
+            AddElement add = delegate (IHtmlCollection<IElement> elements) // refactor to use local function
             {
                 foreach (var element in elements)
                 {
@@ -142,6 +117,14 @@ namespace AngleShardDemo1
                 {
                     string inner = element.InnerHtml;
                     string outer = element.OuterHtml;
+                    var pickParentRegex = RegexFactory.PickParentAttributes();
+                    string parentAttributes = pickParentRegex.Match(outer).Value;
+
+                    bool hasStyle = parentAttributes.Contains("style");
+                    if (hasStyle)
+                    {
+
+                    }
                 }
 
             }
@@ -151,6 +134,35 @@ namespace AngleShardDemo1
         // Sanitizer Core
         private static void Core(StringBuilder outerElement, StringBuilder outerStyle, Regex regex)
         {
+
+        }
+
+        static void TestMod(IHtmlDocument document)
+        {
+            var description = document.GetElementById("__DESCRIPTION__");
+
+            var styleRegex = new Regex("style=\"([^\"]+\")");
+
+            // used by the string builder to insert the style to the correct index
+            string parentStyle = styleRegex.Match(description.OuterHtml).Value;
+            int semiIndex = parentStyle.IndexOf(";"); // find the index of the first semicolon
+
+
+            StringBuilder styleOfParentBuilder = new StringBuilder(styleRegex.Match(description.OuterHtml).Value);
+
+
+            string inner = description.InnerHtml;
+            bool isBold = inner.Contains("<b>");
+
+            if (isBold)
+            {
+                styleOfParentBuilder.Insert(semiIndex, "; font-weight: bold "); // inserts the attribute to the style
+                string finalStyle = styleOfParentBuilder.ToString();
+                var splitStyleOfParent = finalStyle.Split('"');
+
+                description.SetAttribute("style", splitStyleOfParent[1]);
+            }
+
 
         }
 
