@@ -120,10 +120,15 @@ namespace AngleShardDemo1
                     var pickParentRegex = RegexFactory.PickParentAttributes();
                     string parentAttributes = pickParentRegex.Match(outer).Value;
 
-                    bool hasStyle = parentAttributes.Contains("style");
-                    if (hasStyle)
+                    bool ParentHasStyle = parentAttributes.Contains("style");
+                    if (ParentHasStyle)
                     {
-
+                        var pickParentStyleRegex = RegexFactory.PickStyle();
+                        string parentStyle = pickParentStyleRegex.Match(parentAttributes).Value;
+                        elementString.Append(parentStyle);
+                    }else
+                    {
+                        elementString.Append(parentAttributes);
                     }
                 }
 
@@ -132,10 +137,11 @@ namespace AngleShardDemo1
         }
 
         // Sanitizer Core
-        private static void Core(StringBuilder outerElement, StringBuilder outerStyle, Regex regex)
+        private static void Core(StringBuilder parentAttributeString, Regex regex, IElement element)
         {
 
         }
+
 
         static void TestMod(IHtmlDocument document)
         {
