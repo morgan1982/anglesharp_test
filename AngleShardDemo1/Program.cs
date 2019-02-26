@@ -13,7 +13,7 @@ using AngleSharp.Dom;
 
 namespace AngleShardDemo1
 {
-    class BaseReg
+    internal class RegexFactory
     {
         public static string FontSize { get; } = "font-size";
         public static string FontColor { get; } = "";
@@ -24,21 +24,6 @@ namespace AngleShardDemo1
 
         public static Regex CreateRegex(string args) => new Regex(args);
      
-    }
-
-    class RegexFactory
-    {
-        public static Regex FontSize() => new Regex("");
-
-        public static Regex FontColor() => new Regex("");
-
-        public static Regex BackgroundColor() => new Regex("");
-
-        public static Regex FontFamily() => new Regex("");
-
-        public static Regex PickParentAttributes() => new Regex("<(.*?)>");
-
-        public static Regex PickStyle() => new Regex("style=\"([^\"]+\")");
     }
 
     class Program
@@ -54,12 +39,9 @@ namespace AngleShardDemo1
             //{
             //    Console.WriteLine(title);
             //}
-            
-            var reg = BaseReg.CreateRegex(BaseReg.PickStyle);
+             
 
-
-
-            using (StreamReader reader = new StreamReader("C:\\templates\\red.html"))
+            using (StreamReader reader = new StreamReader("C:\\templates\\grass.html"))
             {
                 string content = reader.ReadToEnd();
 
@@ -68,12 +50,11 @@ namespace AngleShardDemo1
                 //TestMod(document);
 
                 // Parser
-                var elements = Parser2(document);
 
                 StringBuilder attributesString = new StringBuilder();
+                var elements = Parser2(document);
 
-                MainEngine(attributesString, elements);
-
+                elements.ForEach(element =>  MainEngine(attributesString, element));
 
                 var final = document.DocumentElement.OuterHtml;
               
@@ -86,77 +67,87 @@ namespace AngleShardDemo1
 
         // replaces the bold 
 
-
-        delegate void AddElement(IHtmlCollection<IElement> elements);
-
         // takes the string and prepares the list of the elements
         static List<IElement> Parser2(IHtmlDocument document)
         {
 
             // use a main StringBuilder and add and remove string to it.
-            var ElementsForModification = new List<IElement>();
-
-
-
-            foreach (var element in ElementsForModification)
+            var ElementsForModification = new List<IElement>()
             {
-                // UserModificationsSanitizer(element)
-            }
+                document.GetElementById("__DESCRIPTION__"),
+                document.GetElementById("__MANUFACTURER__")
+            };
 
-            AddElement add = delegate (IHtmlCollection<IElement> elements) // refactor to use local function
+            void add(IHtmlCollection<IElement> elements)
             {
                 foreach (var element in elements)
                 {
                     ElementsForModification.Add(element);
                 }
-            };
+            }
 
             add(document.GetElementsByName("__FEATURES__"));
             add(document.GetElementsByName("__DESCRIPTION__"));
             add(document.GetElementsByName("__MANUFACTURER__"));
-            ElementsForModification.Add(document.GetElementById("__DESCRIPTION__"));
-            ElementsForModification.Add(document.GetElementById("__MANUFACTURER__"));
 
             return ElementsForModification;
             // pass the elements list to prepare for modification
-            // MainEngine(List<Ielement> elements)
-
         }
 
         // Sanitizer MainEngine
-        private static void MainEngine(StringBuilder elementString, List<IElement> elements)
+        private static void MainEngine(StringBuilder elementString, IElement element)
         {
-            foreach ( var element in elements)
-            {
                 if (element == null)
                 {
                     return;
                 }else
                 {
+                    elementString.Clear(); // clear the builder
                     string inner = element.InnerHtml;
                     string outer = element.OuterHtml;
-                    var pickParentRegex = RegexFactory.PickParentAttributes();
+                    var pickParentRegex = RegexFactory.CreateRegex(RegexFactory.PickParentAttributes);
                     string parentAttributes = pickParentRegex.Match(outer).Value;
 
-                    bool ParentHasStyle = parentAttributes.Contains("style");
+                    bool ParentHasStyle = parentAttributes.Contains("style"); // checks if style
                     if (ParentHasStyle)
                     {
-                        var pickParentStyleRegex = RegexFactory.PickStyle();
+                        var pickParentStyleRegex = RegexFactory.CreateRegex(RegexFactory.PickStyle);
                         string parentStyle = pickParentStyleRegex.Match(parentAttributes).Value;
                         elementString.Append(parentStyle);
                     }else
                     {
                         elementString.Append(parentAttributes);
+                        
                     }
                 }
-
-            }
 
         }
 
         // Sanitizer Core
-        private static void Core(StringBuilder parentAttributeString, Regex regex, IElement element)
+        private static void Core(string innerElement, StringBuilder elementString, bool ParentHasStyle)
         {
+            //Check for the needed regexes
+            bool innerHasColor = innerElement.Contains("color:");
+            bool innerHasBackGroundColor = innerElement.Contains("background-color:");
+            bool innerHasFontFamily = innerElement.Contains("font-family:");
+            // check the other Matches
+            bool innerHasBold = innerElement.Contains("<b>");
+            bool innerHasUnderline = innerElement.Contains("<u>");
+            bool innerHasStrikeThrough = innerElement.Contains("<strike>");
+            bool innerHasItalics = innerElement.Contains("<i>");
+
+            // create the needed regexes
+            if(innerElement.Contains("font-size:"))
+            {
+                var fontSizeRegex = RegexFactory.CreateRegex(RegexFactory.FontSize);
+                string innerFontSize = fontSizeRegex.Match(innerElement).Value;
+
+
+
+                
+            }
+
+            // math the element with all the regexes
 
         }
 
